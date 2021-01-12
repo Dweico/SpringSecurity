@@ -1,5 +1,6 @@
 package com.yangya.config;
 
+import cn.hutool.core.util.ArrayUtil;
 import com.yangya.component.JwtAuthenticationTokenFilter;
 import com.yangya.component.RestAuthenticationEntryPoint;
 import com.yangya.component.RestfulAccessDeniedHandler;
@@ -41,9 +42,16 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private RestfulAccessDeniedHandler restfulAccessDeniedHandler;
     @Autowired
     private RestAuthenticationEntryPoint restAuthenticationEntryPoint;
+    @Autowired
+    private IgnoreUrlsConfig ignoreUrlsConfig;
+
+
 
     @Override
     protected void configure(HttpSecurity httpSecurity) throws Exception {
+        List<String> urls = ignoreUrlsConfig.getUrls();
+        String[] urlArray = ArrayUtil.toArray(urls, String.class);
+
         httpSecurity.csrf()// 由于使用的是JWT，我们这里不需要csrf
                 .disable()
                 .sessionManagement()// 基于token，所以不需要session
@@ -63,6 +71,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .permitAll()
                 .antMatchers("/admin/login", "/admin/register")// 对登录注册要允许匿名访问
                 .permitAll()
+
+               /* .antMatchers(HttpMethod.GET,urlArray) // 允许对于网站静态资源的无授权访问
+                .permitAll()
+                .antMatchers(HttpMethod.POST,urlArray) // 允许对于网站静态资源的无授权访问
+                .permitAll()*/
+
                 .antMatchers(HttpMethod.OPTIONS)//跨域请求会先进行一次options请求
                 .permitAll()
 //                .antMatchers("/**")//测试时全部运行访问
